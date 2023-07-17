@@ -36,7 +36,7 @@ class WebGame(Env):
         self.action_space = Discrete(3)
         self.cap = mss()
         self.game_location = {"top": 300, "left": 0, "width": 600, "height": 500}
-        self.done_location = {"top": 385, "left": 630, "width": 660, "height": 50}
+        self.done_location = {"top": 375, "left": 630, "width": 660, "height": 70}
         pass
 
     def step(self, action):
@@ -56,16 +56,20 @@ class WebGame(Env):
         return channel
 
     def get_done(self):
-        done_cap = np.array(self.cap.grab(self.done_location))[:, :, :3]
-        done_strings = ["GAME", "GAHE"]
+        done_cap =  np.array(self.cap.grab(self.done_location))[:, :, :3]
+        done_strings = ["GAME", "GAHE","GARN"] 
         done = False
         res = pytesseract.image_to_string(done_cap)[:4]
         if res in done_strings:
             done = True
-        return done_cap, done
+        return done_cap,done, res
+    
+
 env = WebGame()
+done_cap,done,res = env.get_done()
 plt.imshow(cv2.cvtColor(env.get_observation()[0], cv2.COLOR_BGR2RGB))
-done, done_cap = env.get_done()
-plt.imshow(np.array(self.cap.grab(self.done_location)))
+# done, done_cap = env.get_done()
+plt.imshow(done_cap)
+print(res)
 
 # %%
