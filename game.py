@@ -25,7 +25,10 @@ import time
 from gym import Env
 from gym.spaces import Box, Discrete
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Higor\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = (
+    r"C:\Users\Higor\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
+)
+
 
 class WebGame(Env):
     def __init__(self):
@@ -40,13 +43,29 @@ class WebGame(Env):
         pass
 
     def step(self, action):
-        pass
+        action_map = {0: "space", 1: "down", 2: "no_op"}
+        if action != 2:
+            pydirectinput.press(action_map[action])
+            done = env.get_done()
+            new_observation = self.get_observation()
+            reward = 1
+            info = {}
+            return new_observation, reward
 
     def render(self):
+        cv2.imshow("Game", np.array(self.cap.grab(self.game_location))[:, :, :3])
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            self.close()
+
+    def close(self):
+        cv2.destroyAllWindows()
         pass
 
     def reset(self):
-        pass
+        time.sleep(1)
+        pydirectinput.click(x=150, y=150)
+        pydirectinput.press("space")
+        return self.get_observation()
 
     def get_observation(self):
         raw = np.array(self.cap.grab(self.game_location))[:, :, :3]
@@ -56,20 +75,24 @@ class WebGame(Env):
         return channel
 
     def get_done(self):
-        done_cap =  np.array(self.cap.grab(self.done_location))[:, :, :3]
-        done_strings = ["GAME", "GAHE","GARN"] 
+        done_cap = np.array(self.cap.grab(self.done_location))[:, :, :3]
+        done_strings = ["GAME", "GAHE", "GARN", "GANM"]
         done = False
         res = pytesseract.image_to_string(done_cap)[:4]
         if res in done_strings:
             done = True
-        return done_cap,done, res
-    
+        return done
+
 
 env = WebGame()
-done_cap,done,res = env.get_done()
-plt.imshow(cv2.cvtColor(env.get_observation()[0], cv2.COLOR_BGR2RGB))
-# done, done_cap = env.get_done()
-plt.imshow(done_cap)
-print(res)
+for episode in range(10):
+    obs = env.reset()
+    done = env.get_done()
+    total_reward = 0
+    reward = 10
+    while not done:
+        obs, reward = env.step(env.action_space.sample())
+        total_reward += reward
+    print(f"Total reward for episode {episode} is {total_reward}")
 
 # %%
