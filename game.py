@@ -50,7 +50,8 @@ class WebGame(Env):
             new_observation = self.get_observation()
             reward = 1
             info = {}
-            return new_observation, reward
+            print(done, new_observation)
+            return done, new_observation
 
     def render(self):
         cv2.imshow("Game", np.array(self.cap.grab(self.game_location))[:, :, :3])
@@ -89,10 +90,11 @@ for episode in range(10):
     obs = env.reset()
     done = env.get_done()
     total_reward = 0
-    reward = 10
+
     while not done:
-        obs, reward = env.step(env.action_space.sample())
-        total_reward += reward
-    print(f"Total reward for episode {episode} is {total_reward}")
+        reward = 1
+        [done, new_observation] = env.step(env.action_space.sample())
+        total_reward = reward + total_reward
+        print(f"Total reward for episode {episode} is {total_reward}")
 
 # %%
